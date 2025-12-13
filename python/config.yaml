@@ -1,0 +1,34 @@
+system:
+  ramTotalFormat: '{total_gb}GB'
+  maintenance: true
+buttons:
+- id: '1'
+  type: redirectButton
+  buttonText: n8n
+  redirectUrl: https://n8n.illerit.de/
+  statusApiEndpoint: /api/status/n8n.illerit.de
+  statusApiMethod: GET
+- id: '2'
+  type: redirectButton
+  buttonText: KI Server
+  apiEndpoint: /api/start-ki-server
+  apiMethod: POST
+  apiData:
+    widgetId: '3'
+    source: mainframe
+  statusApiEndpoint: /api/status/192.168.23.1
+  statusApiMethod: GET
+  icon: warn
+- id: '3'
+  type: redirectButton
+  buttonText: Open Web UI
+  redirectUrl: https://openwebui.illerit.de/
+  apiEndpoint: /api/get-webui
+  apiMethod: POST
+  apiData:
+    widgetId: '3'
+    redirectUrl: https://webui.illerit.de/
+    source: mainframe
+  statusApiEndpoint: /api/status/openwebui.illerit.de
+  statusApiMethod: GET
+  icon: rocket

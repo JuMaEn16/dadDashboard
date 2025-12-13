@@ -1,0 +1,36 @@
+system:
+  ramTotalFormat: '{total_gb}GB'
+  maintenance: false
+buttons:
+- id: '1'
+  type: stat
+  label: Active Jobs
+  value: '12'
+  icon: activity
+- id: '2'
+  type: stat
+  label: Server Temp
+  value: "45\xB0C"
+  icon: flash
+- id: '3'
+  type: action
+  label: Clear Cache
+  endpoint: /api/clear
+  variant: default
+  icon: warn
+- id: '4'
+  type: toggle
+  label: Maintenance
+  endpoint: /api/maint
+  toggleState: false
+  icon: lock
+- id: '5'
+  type: redirectButton
+  label: Open Dashboard Logs
+  buttonText: View Logs
+  redirectUrl: https://example.com/logs
+  apiEndpoint: /api/log-redirect
+  apiMethod: POST
+  apiData:
+    source: mainframe
+    widgetId: '5'
