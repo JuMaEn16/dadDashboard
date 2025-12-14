@@ -20,6 +20,9 @@ import subprocess
 import platform
 import socket
 import time
+import ipaddress
+from urllib.parse import urlparse
+import requests
 
 CONFIG_PATH = Path("config.yaml")
 AI_SERVER_MAC = "D8:CB:8A:40:15:E5"
@@ -142,10 +145,43 @@ def api_buttons():
 
     return jsonify(processed), 200
 
-def is_online(ip):
-    param = "-n" if platform.system().lower() == "windows" else "-c"
-    command = ["ping", param, "1", ip]
-    return subprocess.call(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
+def _is_ip_address(value: str) -> bool:
+    try:
+        ipaddress.ip_address(value)
+        return True
+    except ValueError:
+        return False
+
+
+def is_online(target: str) -> bool:
+    """
+    - If `target` is a bare IP address -> use ping, return True on success.
+    - Otherwise treat `target` as a URL/hostname -> use HTTP GET, return True if status_code == 200.
+    """
+
+    # If it's a plain IP address (v4 or v6), use ping
+    if _is_ip_address(target):
+        param = "-c"
+        command = ["ping", param, "1", "-W", "1", target]
+        return subprocess.call(
+            command,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        ) == 0
+
+    # Otherwise, treat as URL/hostname and use HTTP GET
+    parsed = urlparse(target)
+    if not parsed.scheme:
+        # No scheme given, assume http
+        url = "http://" + target
+    else:
+        url = target
+
+    try:
+        resp = requests.get(url, timeout=1)
+        return resp.status_code == 200
+    except requests.RequestException:
+        return False
 
 @app.route("/maint", methods=["POST"])
 def api_maint():
@@ -211,14 +247,15 @@ def api_dummy():
 @app.route("/get-webui", methods=["POST"])
 def api_log_redirect():
 
-    if is_online("192.168.23.1"):
-        return jsonify({"status": "ok", "logged": True}), 200        
-    
     wake_on_lan(AI_SERVER_MAC)
-
-    while not is_online("192.168.23.1"):
+    
+    while not is_online("192.168.23.22"):
         time.sleep(1)
         print("Waiting for AI server to come online...")
+
+    while not is_online("openwebui.illerit.de"):
+        time.sleep(1)
+        print("Waiting for AI Web UI to come online...")
 
     return jsonify({"status": "ok", "logged": True}), 200
 

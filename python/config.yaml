@@ -16,7 +16,7 @@ buttons:
   apiData:
     widgetId: '3'
     source: mainframe
-  statusApiEndpoint: /api/status/192.168.23.1
+  statusApiEndpoint: /api/status/192.168.23.22
   statusApiMethod: GET
   icon: warn
 - id: '3'

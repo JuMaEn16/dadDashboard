@@ -596,9 +596,9 @@ const handleRedirectAction = async (widget: DashboardWidget) => {
 
   const doRedirect = () => {
     // same tab
-    window.location.href = widget.redirectUrl!;
+    //window.location.href = widget.redirectUrl!;
     // or new tab:
-    // window.open(widget.redirectUrl!, "_blank", "noopener,noreferrer");
+    window.open(widget.redirectUrl!, "_blank", "noopener,noreferrer");
   };
 
   // If there is an API endpoint configured, call it first.
@@ -769,7 +769,15 @@ const handleRedirectAction = async (widget: DashboardWidget) => {
 // --- Mainframe Page Component ---
 
 export default function Mainframe() {
-  const [theme, setTheme] = useState<GlassTheme>("indigo");
+  const [theme, setTheme] = useState<GlassTheme>(() => {
+    try {
+      if (typeof window === "undefined") return "indigo";
+      const saved = localStorage.getItem("mainframe-theme");
+      return (saved as GlassTheme) || "indigo";
+    } catch {
+      return "indigo";
+    }
+  });
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
 
   const currentTheme = glassThemes[theme];
@@ -794,7 +802,20 @@ export default function Mainframe() {
     const idx = order.indexOf(theme);
     const next = order[(idx + 1) % order.length];
     setTheme(next);
+    try {
+      if (typeof window !== "undefined") localStorage.setItem("mainframe-theme", next);
+    } catch {
+      /* ignore localStorage errors */
+    }
   };
+
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") localStorage.setItem("mainframe-theme", theme);
+    } catch {
+      /* ignore localStorage errors */
+    }
+  }, [theme]);
 
   return (
     <div
